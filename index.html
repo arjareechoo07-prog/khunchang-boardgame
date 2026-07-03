@@ -166,8 +166,9 @@ button{
   display:grid;
   grid-template-columns:repeat(6, minmax(92px,1fr));
   grid-auto-rows:92px;
-  gap:7px;
-  min-width:640px;
+  gap:10px;
+  min-width:660px;
+  padding:6px;
 }
 .tile{
   position:relative;
@@ -183,7 +184,8 @@ button{
   text-align:center;
   padding:4px;
   line-height:1.2;
-  overflow:hidden;
+  overflow:visible;
+  transition:transform .15s ease;
 }
 .tile .num{
   position:absolute;
@@ -193,15 +195,71 @@ button{
   font-weight:700;
 }
 .tile .icon{font-size:24px; margin-bottom:2px;}
-.tile.zone0{background:linear-gradient(155deg,#F6D98A,#E3B24E);}
-.tile.zone1{background:linear-gradient(155deg,#9FD7C6,#4E9C86);}
-.tile.zone2{background:linear-gradient(155deg,#C9A6D9,#8E63A0);}
-.tile.zone3{background:linear-gradient(155deg,#F0B0D4,#B8548E);}
-.tile.zone4{background:linear-gradient(155deg,#E3A3A9,#B85B65);}
-.tile.zone5{background:linear-gradient(155deg,#A9C1E8,#5F82BC);}
-.tile.checkpoint{background:linear-gradient(155deg,var(--gold-light),var(--gold)); border-color:var(--indigo);}
-.tile.start{background:linear-gradient(155deg,#fff,#dcd2b0); border:2.5px solid var(--maroon); font-weight:800;}
-.tile.final{background:linear-gradient(155deg,#F0CE83,var(--maroon)); color:var(--cream); border:3.5px solid var(--gold); font-weight:800;}
+/* --- distinct shape + color per zone --- */
+.tile.zone0{
+  background:linear-gradient(155deg,#F6D98A,#E3B24E);
+  border-radius:14px;
+}
+.tile.zone1{
+  background:linear-gradient(155deg,#9FD7C6,#4E9C86);
+  border-radius:14px;
+}
+.tile.zone2{
+  background:linear-gradient(155deg,#C9A6D9,#8E63A0);
+  border-radius:14px;
+}
+.tile.zone3{
+  background:linear-gradient(155deg,#F0B0D4,#B8548E);
+  border-radius:14px;
+}
+.tile.zone4{
+  background:linear-gradient(155deg,#E3A3A9,#B85B65);
+  border-radius:14px;
+}
+.tile.zone5{
+  background:linear-gradient(155deg,#A9C1E8,#5F82BC);
+  border-radius:14px;
+}
+.tile.checkpoint{
+  background:linear-gradient(155deg,#F2F0E6,#B9B6A8);
+  border-color:#111;
+  border-width:3px;
+  border-radius:14px;
+  z-index:5;
+  box-shadow:0 0 0 2px rgba(255,255,255,.6), 0 0 12px 3px rgba(185,182,168,.7);
+  animation:pulse-checkpoint 2.2s ease-in-out infinite;
+}
+.tile.checkpoint .icon{font-size:24px;}
+.tile.start{
+  background:linear-gradient(155deg,#fff,#dcd2b0);
+  border:2.5px solid var(--maroon);
+  font-weight:800;
+  border-radius:14px;
+}
+.tile.final{
+  background:linear-gradient(155deg,#F0CE83,var(--maroon));
+  color:var(--cream);
+  border:4px solid var(--gold);
+  font-weight:800;
+  border-radius:14px;
+  transform:scale(1.12) translateX(-10px);
+  z-index:6;
+  box-shadow:0 0 0 4px rgba(255,255,255,.6), 0 0 22px 6px rgba(217,164,65,.9);
+  animation:pulse-final 1.8s ease-in-out infinite;
+}
+.tile.final .icon{font-size:26px;}
+@keyframes pulse-checkpoint{
+  0%,100%{ box-shadow:0 0 0 2px rgba(255,255,255,.6), 0 0 10px 2px rgba(185,182,168,.6); }
+  50%{ box-shadow:0 0 0 2px rgba(255,255,255,.85), 0 0 16px 5px rgba(185,182,168,.9); }
+}
+@keyframes pulse-final{
+  0%,100%{ box-shadow:0 0 0 4px rgba(255,255,255,.6), 0 0 18px 5px rgba(217,164,65,.8); }
+  50%{ box-shadow:0 0 0 4px rgba(255,255,255,.85), 0 0 28px 10px rgba(217,164,65,1); }
+}
+.tile.player-here{
+  z-index:8 !important;
+  transition:box-shadow .2s ease;
+}
 .tile .tokens{
   position:absolute; bottom:2px; right:2px;
   display:flex; gap:1px; flex-wrap:wrap; max-width:92%;
@@ -230,12 +288,20 @@ button{
   display:flex;
   align-items:center;
   gap:10px;
+  border:2px solid transparent;
   border-left:5px solid var(--gold);
+  transition:transform .15s ease;
 }
 .player-card.turn{
-  border-left-color:var(--gold);
   background:rgba(217,164,65,.18);
-  box-shadow:0 0 0 1px rgba(217,164,65,.5) inset;
+  border:2px solid var(--turn-color, var(--gold));
+  border-left:5px solid var(--turn-color, var(--gold));
+  transform:scale(1.02);
+  animation:turn-pulse 1.4s ease-in-out infinite;
+}
+@keyframes turn-pulse{
+  0%,100%{ box-shadow:0 0 0 2px var(--turn-color, var(--gold)), 0 0 8px 1px var(--turn-color, var(--gold)); }
+  50%{ box-shadow:0 0 0 3px var(--turn-color, var(--gold)), 0 0 18px 6px var(--turn-color, var(--gold)); }
 }
 .player-card .name{font-weight:700; font-size:14px;}
 .player-card .stats{font-size:11.5px; color:var(--gold-light); margin-top:2px;}
@@ -804,6 +870,7 @@ function renderBoard(){
     else if(t.type==='checkpoint') cls+='checkpoint';
     else cls+='zone'+t.zoneIndex;
     div.className = cls;
+    div.id = 'tile-'+i;
     div.style.gridRowStart = cellPos[i].row+1;
     div.style.gridColumnStart = cellPos[i].col+1;
     div.innerHTML = `<span class="num">${i}</span><span class="icon">${tileIcon(t)}</span><span>${tileLabel(t)}</span><span class="tokens" id="tok-${i}"></span>`;
@@ -815,7 +882,10 @@ function placeTokens(){
   board.forEach((t,i)=>{
     const holder = document.getElementById('tok-'+i);
     if(holder) holder.innerHTML='';
+    const tileEl = document.getElementById('tile-'+i);
+    if(tileEl){ tileEl.style.boxShadow=''; tileEl.classList.remove('player-here'); }
   });
+  const byPos = {};
   players.forEach(p=>{
     const holder = document.getElementById('tok-'+p.pos);
     if(holder){
@@ -826,6 +896,17 @@ function placeTokens(){
       dot.title = p.name;
       holder.appendChild(dot);
     }
+    (byPos[p.pos] = byPos[p.pos]||[]).push(p.color);
+  });
+  Object.keys(byPos).forEach(pos=>{
+    const tileEl = document.getElementById('tile-'+pos);
+    if(!tileEl) return;
+    tileEl.classList.add('player-here');
+    const rings = byPos[pos].map((c,idx)=>{
+      const inner = 3+idx*5, outer = inner+10;
+      return `0 0 0 ${inner}px ${c}, 0 0 ${outer}px ${inner+3}px ${c}`;
+    }).join(', ');
+    tileEl.style.boxShadow = rings;
   });
 }
 
@@ -838,6 +919,7 @@ function renderPlayers(){
     const card = document.createElement('div');
     card.className = 'player-card' + (i===currentPlayer && !gameOver ? ' turn':'');
     card.style.borderLeftColor = p.color;
+    if(i===currentPlayer && !gameOver){ card.style.setProperty('--turn-color', p.color); }
     card.innerHTML = `
       <span class="token-dot" style="background:${p.color}; display:flex; align-items:center; justify-content:center; font-size:16px;">${p.icon}</span>
       <div style="flex:1;">
