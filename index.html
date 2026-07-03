@@ -400,6 +400,7 @@ small.dim{color:rgba(251,243,222,.55);}
     <button class="btn secondary" onclick="openHelp()">📖 วิธีเล่น</button>
     <button class="btn secondary" onclick="openLeaderboard()">🏆 กระดานคะแนน</button>
     <button class="btn secondary" id="sound-toggle-btn" onclick="toggleSound()" title="เปิด/ปิดเสียง">🔊</button>
+    <button class="btn secondary" onclick="ownerClearLeaderboard()" title="โหมดเจ้าของ: ล้างกระดานคะแนนที่แสดงผลสำหรับห้องเรียนใหม่">🔑</button>
   </div>
 </div>
 
@@ -407,7 +408,7 @@ small.dim{color:rgba(251,243,222,.55);}
   <!-- MAIN: BOARD -->
   <div>
     <div class="panel" id="setup">
-      <div class="panel-title">🧑‍🤝‍🧑 ตั้งค่าผู้เล่น (2–5 คน)</div>
+      <div class="panel-title">🧑‍🤝‍🧑 ตั้งค่าผู้เล่น (2–10 คน)</div>
       <div id="player-inputs"></div>
       <p style="font-size:11.5px; color:var(--gold-light); margin:2px 0 8px; line-height:1.5;">💡 ช่อง "กลุ่มบ้าน" ใช้สำหรับกรณีแยกตัวแทนแต่ละกลุ่มไปแข่งกันคนละโต๊ะ (เช่น 8 กลุ่ม กลุ่มละ 5 คน กระจายไปนั่งแข่งขันคนละโต๊ะ) — ใส่ชื่อกลุ่มเดิมของนักเรียนไว้ แล้วระบบจะรวมคะแนนของตัวแทนทุกคนในกลุ่มเดียวกันจากทุกโต๊ะให้อัตโนมัติในกระดานคะแนน ไม่ใส่ก็ได้หากไม่ต้องการฟีเจอร์นี้</p>
       <div style="display:flex; gap:8px; margin:8px 0;">
@@ -480,7 +481,7 @@ small.dim{color:rgba(251,243,222,.55);}
   <div class="modal">
     <h3>📖 วิธีเล่น "ถวายฎีกา"</h3>
     <p style="font-size:14px; line-height:1.7;">
-    1. ตั้งค่าผู้เล่น 2–5 คน ใส่ชื่อ แล้วเลือกโหมดแข่งขัน (แยกคะแนนรายคน) หรือโหมดร่วมมือ (รวมคะแนนเป็นทีม)<br>
+    1. ตั้งค่าผู้เล่น 2–10 คน ใส่ชื่อ แล้วเลือกโหมดแข่งขัน (แยกคะแนนรายคน) หรือโหมดร่วมมือ (รวมคะแนนเป็นทีม)<br>
     2. ผู้เล่นผลัดกันกด "ทอยลูกเต๋า" เพื่อเดินหน้าไปตามด่านทั้ง 6 ด่าน ได้แก่ เนื้อเรื่อง → ตัวละคร → ประวัติวรรณคดี → ศิลปะการประพันธ์ → ค่านิยมความเชื่อ → วิเคราะห์-ประยุกต์ใช้<br>
     3. เมื่อตกลงช่อง "คำถาม" ให้ตอบคำถามให้ถูกต้องเพื่อรับคะแนน (5 คะแนนต่อข้อ)<br>
     4. ช่อง "การ์ดพลัง" จะสุ่มการ์ดพิเศษให้เก็บไว้ 1 ใน 8 แบบ เช่น เพิ่มคะแนนสองเท่า สะกดคู่แข่งให้หลับ สลับตำแหน่ง หรือการ์ดป้องกัน/ตอบใหม่ที่ทำงานอัตโนมัติ<br>
@@ -658,7 +659,12 @@ const PLAYER_TOKENS = [
   {icon:'🌸', name:'วันทอง', color:'#2F6F5E'},
   {icon:'🏹', name:'พลายงาม', color:'#D9A441'},
   {icon:'💰', name:'ขุนช้าง', color:'#5B3A5C'},
-  {icon:'👑', name:'พระพันวษา', color:'#3D6EA8'}
+  {icon:'👑', name:'พระพันวษา', color:'#3D6EA8'},
+  {icon:'🐎', name:'ม้าสีหมอก', color:'#C9702C'},
+  {icon:'🧕', name:'ทองประศรี', color:'#8B5E3C'},
+  {icon:'👵', name:'ศรีประจัน', color:'#1F7A6C'},
+  {icon:'📜', name:'ฎีกาทอง', color:'#C9962C'},
+  {icon:'👻', name:'ภูตพราย', color:'#5C4A9C'}
 ];
 const PLAYER_COLORS = PLAYER_TOKENS.map(t=>t.color);
 
@@ -769,7 +775,7 @@ function renderPlayerInputs(count){
 let playerCount = 2;
 renderPlayerInputs(playerCount);
 
-function addPlayer(){ if(playerCount<5){ playerCount++; renderPlayerInputs(playerCount);} }
+function addPlayer(){ if(playerCount<10){ playerCount++; renderPlayerInputs(playerCount);} }
 function removePlayer(){ if(playerCount>2){ playerCount--; renderPlayerInputs(playerCount);} }
 
 function setMode(m){
@@ -1333,6 +1339,29 @@ function backendReady(silent){
 
 /* ================= HELP / LEADERBOARD ================= */
 function openHelp(){ document.getElementById('help-overlay').classList.add('show'); }
+async function ownerClearLeaderboard(){
+  if(!backendReady()) return;
+  const pin = prompt('🔑 โหมดเจ้าของ\n\nกรุณาใส่รหัสผ่าน เพื่อล้างกระดานคะแนนที่แสดงผล (สำหรับให้ห้องเรียนใหม่เริ่มนับคะแนนของตนเอง)\n\nหมายเหตุ: ข้อมูลคะแนนทั้งหมดจะยังถูกเก็บไว้ครบใน Google Sheet เสมอ ไม่มีการลบข้อมูลจริงแต่อย่างใด');
+  if(pin === null || pin.trim()==='') return;
+  const ok1 = confirm('ยืนยันล้างกระดานคะแนนที่แสดงผลในเกม?\n\nห้องเรียน/รอบก่อนหน้าจะไม่แสดงในกระดานคะแนนอีก แต่ข้อมูลจริงยังอยู่ครบใน Google Sheet ตลอดไป');
+  if(!ok1) return;
+  try{
+    const res = await fetch(API_URL, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'clearLeaderboardView', pin: pin.trim()})
+    });
+    const json = await res.json();
+    if(json && json.ok){
+      alert('✅ ล้างกระดานคะแนนที่แสดงผลเรียบร้อยแล้ว! ห้องเรียนใหม่พร้อมเริ่มนับคะแนนของตนเองได้เลยค่ะ');
+      await openLeaderboard();
+    } else {
+      alert('❌ ' + (json && json.error ? json.error : 'ไม่สามารถล้างกระดานคะแนนได้ กรุณาลองใหม่อีกครั้ง'));
+    }
+  }catch(e){
+    alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง');
+  }
+}
+
 async function openLeaderboard(){
   document.getElementById('leaderboard-overlay').classList.add('show');
   const statusEl = document.getElementById('save-status');
